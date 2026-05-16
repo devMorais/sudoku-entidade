@@ -7,26 +7,24 @@ use App\Models\Player;
 use App\Events\GameStarted;
 use App\Events\MissionAccomplished;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use App\Events\PlayerJoined;
 use App\Events\PlayerEliminated;
 
 class GameController extends Controller
 {
-    // Cria uma nova sala e gera o puzzle síncrono no backend
-    public function createRoom()
+    // O PC do Líder envia o puzzle criptográfico e o backend apenas guarda no cofre
+    public function createRoom(Request $request)
     {
+        // 1. Gera um PIN de 4 dígitos inédito
         do {
             $pin = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
         } while (Room::where('pin', $pin)->where('status', 'waiting')->exists());
 
-        $solution = $this->generateSolution();
-        $puzzle = $this->generatePuzzle($solution, 44); // 44 pistas = Nível Fácil
-
+        // 2. Salva o Puzzle recebido do frontend
         $room = Room::create([
             'pin' => $pin,
-            'puzzle' => $puzzle,
-            'solution' => $solution,
+            'puzzle' => $request->solution ? $request->puzzle : [], // Garante que não venha nulo
+            'solution' => $request->solution ? $request->solution : [],
             'status' => 'waiting'
         ]);
 
@@ -37,7 +35,7 @@ class GameController extends Controller
         ]);
     }
 
-    // Aluno entrando na sala pelo celular
+    // Agente entrando na sala
     public function joinRoom(Request $request)
     {
         $request->validate([
@@ -61,14 +59,13 @@ class GameController extends Controller
 
         broadcast(new PlayerJoined($room->pin, $player->name, $player->id));
 
-        // NOVO: Pega todos os agentes que JÁ ESTÃO na sala para atualizar a tela de quem acabou de entrar
         $existingPlayers = $room->players()->get(['id', 'name']);
 
         return response()->json([
             'success' => true,
             'player_id' => $player->id,
             'is_leader' => $isLeader,
-            'players' => $existingPlayers, // Mandando a lista pelo túnel de dados!
+            'players' => $existingPlayers,
             'room' => [
                 'pin' => $room->pin,
                 'status' => $room->status
@@ -83,6 +80,7 @@ class GameController extends Controller
 
         broadcast(new GameStarted($room));
 
+        // A solução é enviada no start para que os agentes visitantes recebam a chave idêntica à do líder
         return response()->json([
             'success' => true,
             'puzzle' => $room->puzzle,
@@ -90,7 +88,6 @@ class GameController extends Controller
         ]);
     }
 
-    // Aluno concluiu o Sudoku! O primeiro que bater aqui para o cronômetro global
     public function claimVictory(Request $request, $pin)
     {
         $room = Room::where('pin', $pin)->where('status', 'playing')->firstOrFail();
@@ -106,63 +103,6 @@ class GameController extends Controller
         broadcast(new MissionAccomplished($room, $player->name));
 
         return response()->json(['success' => true, 'winner' => $player->name]);
-    }
-
-    // ── AUXILIARES MATHEMATICOS DO SUDOKU (BACKTRACKING) ──
-    private function generateSolution()
-    {
-        $g = array_fill(0, 9, array_fill(0, 9, 0));
-        $this->fillGrid($g, 0);
-        return $g;
-    }
-
-    private function fillGrid(&$g, $pos)
-    {
-        if ($pos === 81) return true;
-        $r = (int)($pos / 9);
-        $c = $pos % 9;
-
-        $nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-        shuffle($nums);
-
-        foreach ($nums as $n) {
-            if ($this->checkValid($g, $r, $c, $n)) {
-                $g[$r][$c] = $n; // Adicionado o $ aqui
-                if ($this->fillGrid($g, $pos + 1)) return true;
-                $g[$r][$c] = 0;  // Adicionado o $ aqui
-            }
-        }
-        return false;
-    }
-
-    private function checkValid($g, $r, $c, $n)
-    {
-        for ($i = 0; $i < 9; $i++) {
-            if ($g[$r][$i] === $n || $g[$i][$c] === $n) return false;
-        }
-        $br = (int)($r / 3) * 3;
-        $bc = (int)($c / 3) * 3;
-        for ($i = 0; $i < 3; $i++) {
-            for ($j = 0; $j < 3; $j++) {
-                if ($g[$br + $i][$bc + $j] === $n) return false;
-            }
-        }
-        return true;
-    }
-
-    private function generatePuzzle($sol, $clues)
-    {
-        $p = $sol;
-        $cellsToRemove = 81 - $clues;
-        while ($cellsToRemove > 0) {
-            $r = rand(0, 8);
-            $c = rand(0, 8);
-            if ($p[$r][$c] !== 0) {
-                $p[$r][$c] = 0;
-                $cellsToRemove--;
-            }
-        }
-        return $p;
     }
 
     public function eliminatePlayer(Request $request, $pin)
