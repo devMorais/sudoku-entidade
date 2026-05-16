@@ -26,4 +26,9 @@ class GameStarted implements ShouldBroadcastNow
             new Channel('room.' . $this->room->pin),
         ];
     }
+
+    public function broadcastAs(): string
+    {
+        return 'GameStarted';
+    }
 }

@@ -310,12 +310,14 @@ document.getElementById('btn-start').addEventListener('click', () => {
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
+                    G.sol = data.solution;
+                    G.puz = data.puzzle;
                     document.getElementById('intro').classList.remove('active');
                     document.getElementById('game').classList.add('active');
                     startGame();
                 }
             })
-            .catch(() => setStatus('⚠ Erro ao iniciar a missão.'));
+            .catch(() => setStatus('Erro ao iniciar a missão.'));
         return;
     }
     G.multiplayer = false;

@@ -22,4 +22,9 @@ class PlayerEliminated implements ShouldBroadcastNow
     {
         return [new Channel('room.' . $this->pin)];
     }
+
+    public function broadcastAs(): string
+    {
+        return 'PlayerEliminated';
+    }
 }

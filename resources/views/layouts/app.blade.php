@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Entidade vs. Ethan — Sudoku</title>
 
-    <link rel="stylesheet" href="{{ asset('css/sudoku.css') }}">
+    <link rel="stylesheet" href="{{ asset_versionado('css/sudoku.css') }}">
 </head>
 
 <body>
@@ -21,7 +21,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/8.3.0/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 
-    <script src="{{ asset('js/sudoku.js') }}"></script>
+    <script src="{{ asset_versionado('js/sudoku.js') }}"></script>
 </body>
 
 </html>

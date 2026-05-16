@@ -76,7 +76,6 @@ class GameController extends Controller
         ]);
     }
 
-    // O Líder clica no botão e o Laravel Reverb acorda todas as telas em tempo real
     public function startGame($pin)
     {
         $room = Room::where('pin', $pin)->firstOrFail();
@@ -84,7 +83,11 @@ class GameController extends Controller
 
         broadcast(new GameStarted($room));
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'puzzle' => $room->puzzle,
+            'solution' => $room->solution
+        ]);
     }
 
     // Aluno concluiu o Sudoku! O primeiro que bater aqui para o cronômetro global

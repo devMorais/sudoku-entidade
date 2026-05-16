@@ -28,4 +28,9 @@ class MissionAccomplished implements ShouldBroadcastNow
             new Channel('room.' . $this->room->pin),
         ];
     }
+
+    public function broadcastAs(): string
+    {
+        return 'MissionAccomplished';
+    }
 }
