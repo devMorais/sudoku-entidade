@@ -18,7 +18,12 @@ const SFX = {
     glitch: () => { let count = 0; let gl = setInterval(() => { playTone('sawtooth', Math.random() * 200 + 50, 0.1, 0.1); if (++count > 8) clearInterval(gl); }, 80); }
 };
 
-const echo = new (window.Echo || window.LaravelEcho)({ broadcaster: 'reverb', key: 'entidadesudokukey', wsHost: window.location.hostname, wsPort: 8080, forceTLS: false, enabledTransports: ['ws', 'wss'] });
+const echo = new (window.Echo || window.LaravelEcho)({
+    broadcaster: 'pusher',
+    key: '052bbd9c8da18fd4e3c9',
+    cluster: 'sa1',
+    forceTLS: true
+});
 
 G.multiplayer = false; G.roomPin = null; G.playerId = null; G.isLeader = false;
 
