@@ -96,7 +96,7 @@
         G.startTime = Date.now(); G.total = G.puz.flat().filter(v => !v).length; G.filled = 0;
         clearInterval(G.timer);
 
-        document.getElementById('hud-errors').textContent = '0 / 3'; document.getElementById('hud-errors').className = 'hud-val';
+        document.getElementById('hud-errors').textContent = '0 / ' + G.maxErr; document.getElementById('hud-errors').className = 'hud-val';
         document.getElementById('hud-hints').textContent = '3'; document.getElementById('hud-prog').textContent = '0%';
         document.getElementById('hud-time').className = 'hud-val';
         document.getElementById('btn-notes').textContent = '📝 BENJI: OFF'; document.getElementById('btn-notes').classList.remove('on');
@@ -175,7 +175,7 @@
             if (wasEmpty) { G.filled++; updProg() } setStatus(''); applyHL(r, c); checkWin();
         } else {
             SFX.error(); G.errors++; const left = G.maxErr - G.errors;
-            document.getElementById('hud-errors').textContent = G.errors + ' / 3';
+            document.getElementById('hud-errors').textContent = G.errors + ' / ' + G.maxErr;
             if (G.errors >= G.maxErr) document.getElementById('hud-errors').className = 'hud-val danger'; else document.getElementById('hud-errors').className = 'hud-val warn';
             cell.querySelector('.mv').textContent = n; cell.classList.add('error'); G.puz[r][c] = n;
             setStatus('⚠ ERRO DETECTADO — ' + left + ' tentativa' + (left !== 1 ? 's' : '') + ' restante' + (left !== 1 ? 's' : ''));
