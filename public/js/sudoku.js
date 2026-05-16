@@ -280,23 +280,23 @@ window.markAgentEliminated = function (id) {
 
 function subscribeToRoom(pin) {
     echo.channel(`room.${pin}`)
-        .listen('PlayerJoined', (e) => {
+        .listen('.PlayerJoined', (e) => { // <-- Adicionado o ponto aqui
             SFX.hint(); renderLobbyAgent(e.playerName, e.playerId);
             setStatus(`> Agente ${e.playerName.toUpperCase()} interceptou o PIN.`);
         })
-        .listen('PlayerEliminated', (e) => {
+        .listen('.PlayerEliminated', (e) => { // <-- Adicionado o ponto aqui
             SFX.error(); let agentName = "DESCONHECIDO";
             const domEl = document.getElementById('agent-' + e.playerId);
             if (domEl) agentName = domEl.textContent.replace('[ CONECTADO ]', '').replace('[ ABATIDO ]', '').trim();
             markAgentEliminated(e.playerId);
             setStatus(`⚠ ALERTA GLOBAL: Agente ${agentName} foi trancado fora do sistema.`);
         })
-        .listen('GameStarted', (e) => {
+        .listen('.GameStarted', (e) => { // <-- Adicionado o ponto aqui
             G.sol = e.room.solution; G.puz = e.room.puzzle;
             document.getElementById('intro').classList.remove('active');
             document.getElementById('game').classList.add('active'); startGame();
         })
-        .listen('MissionAccomplished', (e) => {
+        .listen('.MissionAccomplished', (e) => { // <-- Adicionado o ponto aqui
             if (e.room.winner_id === G.playerId) triggerWin();
             else triggerOpponentWin(e.winnerName);
         });
@@ -304,8 +304,24 @@ function subscribeToRoom(pin) {
 
 document.getElementById('btn-start').addEventListener('click', () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    if (G.multiplayer && G.isLeader) { setStatus('> Deflagrando sinal síncrono para a rede Reverb...'); fetch(`/api/rooms/${G.roomPin}/start`, { method: 'POST' }); return; }
-    G.multiplayer = false; document.getElementById('intro').classList.remove('active'); document.getElementById('game').classList.add('active'); startGame();
+    if (G.multiplayer && G.isLeader) {
+        setStatus('> Deflagrando sinal síncrono...');
+        fetch(`/api/rooms/${G.roomPin}/start`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('intro').classList.remove('active');
+                    document.getElementById('game').classList.add('active');
+                    startGame();
+                }
+            })
+            .catch(() => setStatus('⚠ Erro ao iniciar a missão.'));
+        return;
+    }
+    G.multiplayer = false;
+    document.getElementById('intro').classList.remove('active');
+    document.getElementById('game').classList.add('active');
+    startGame();
 });
 
 document.getElementById('btn-do-create').addEventListener('click', async () => {
