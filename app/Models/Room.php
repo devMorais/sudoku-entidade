@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
 {
-    protected $fillable = ['pin', 'puzzle', 'solution', 'status', 'winner_id'];
+    protected $fillable = ['pin', 'puzzle', 'solution', 'status', 'difficulty', 'winner_id'];
 
     protected $casts = [
         'puzzle' => 'array',

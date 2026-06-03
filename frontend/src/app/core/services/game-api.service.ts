@@ -18,11 +18,13 @@ export class GameApiService {
 
   createRoom(
     name: string,
+    difficulty: string,
     puzzle: number[][],
     solution: number[][]
   ): Observable<ApiResponse<CreateRoomResponse>> {
     return this.http.post<ApiResponse<CreateRoomResponse>>(`${this.base}/rooms`, {
       name,
+      difficulty,
       puzzle,
       solution,
     });

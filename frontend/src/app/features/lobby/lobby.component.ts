@@ -1,94 +1,105 @@
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { QrcodeComponent } from '../../shared/components/qrcode/qrcode.component';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GameApiService } from '../../core/services/game-api.service';
 import { GameStateService } from '../../core/services/game-state.service';
 import { SudokuService } from '../../core/services/sudoku.service';
-import { WebSocketService, PlayerJoinedPayload, GameStartedPayload, LeaderChangedPayload, PlayerLeftPayload } from '../../core/services/websocket.service';
+import {
+  WebSocketService,
+  PlayerJoinedPayload,
+  GameStartedPayload,
+  LeaderChangedPayload,
+  PlayerLeftPayload,
+} from '../../core/services/websocket.service';
 import { Difficulty } from '../../core/models/room.model';
 import { Player } from '../../core/models/player.model';
 
 @Component({
   selector: 'app-lobby',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, QrcodeComponent],
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss'],
 })
 export class LobbyComponent implements OnInit, OnDestroy {
-
   private api    = inject(GameApiService);
   private gs     = inject(GameStateService);
   private sudoku = inject(SudokuService);
   private ws     = inject(WebSocketService);
   private router = inject(Router);
 
-  mode       = signal<'select' | 'solo' | 'create' | 'join' | 'waiting'>('select');
+  mode       = signal<'select' | 'solo' | 'create' | 'join' | 'waiting' | string>('select');
   playerName = '';
   joinPin    = '';
   difficulty: Difficulty = 'medium';
 
-  roomPin  = signal('');
-  isLeader = signal(false);
-  players  = signal<Partial<Player>[]>([]);
-  loading  = signal(false);
-  errorMsg = signal('');
+  roomPin    = signal('');
+  isLeader   = signal(false);
+  players    = signal<Partial<Player>[]>([]);
+  loading    = signal(false);
+  errorMsg   = signal('');
 
-  // puzzle gerado pelo líder — guardado para iniciar o jogo
+  // detecta se veio de link de convite (?pin=XXXX)
+  hasInvitePin = signal(false);
+  savedName    = '';
+
   private leaderPuzzle:   number[][] = [];
   private leaderSolution: number[][] = [];
-
   private sub?: Subscription;
 
   ngOnInit(): void {
-    // restaura preferências salvas
-    const prefs = localStorage.getItem('sudoku_prefs');
-    if (prefs) {
-      try {
-        const p = JSON.parse(prefs);
-        this.playerName = p.name ?? '';
-        this.difficulty = p.diff ?? 'medium';
-      } catch { /* ignora */ }
-    }
+    // carrega prefs salvas
+    try {
+      const prefs = JSON.parse(localStorage.getItem('sudoku_prefs') || '{}');
+      this.playerName = prefs.name ?? '';
+      this.savedName  = prefs.name ?? '';
+      this.difficulty = prefs.diff ?? 'medium';
+    } catch { /* ignora */ }
 
-    // lê ?pin=XXXX da URL para pré-preencher
+    // verifica ?pin=XXXX na URL
     const params = new URLSearchParams(window.location.search);
     const pin = params.get('pin');
-    if (pin) { this.joinPin = pin; this.mode.set('join'); }
+    if (pin) {
+      this.joinPin = pin;
+      this.hasInvitePin.set(true);
+      this.mode.set('join');
+      // remove o pin da URL sem recarregar
+      window.history.replaceState({}, '', window.location.pathname);
+    }
 
     this.sub = this.ws.events$.subscribe(evt => this.handleWsEvent(evt.type, evt.payload));
   }
 
   ngOnDestroy(): void { this.sub?.unsubscribe(); }
 
-  selectMode(m: 'solo' | 'create' | 'join'): void {
+  selectMode(m: string): void {
     this.mode.set(m);
     this.errorMsg.set('');
+    this.hasInvitePin.set(false);
   }
 
-  // ── Solo: gera puzzle localmente e vai direto ao jogo ─────────────────────
+  // ── Solo ─────────────────────────────────────────────────────────────────
   startSolo(): void {
     this.savePrefs();
     this.gs.startNewGame(this.difficulty);
     this.router.navigate(['/game']);
   }
 
-  // ── Criar sala: gera puzzle, envia ao servidor, espera jogadores ──────────
+  // ── Criar sala ───────────────────────────────────────────────────────────
   createRoom(): void {
     if (!this.playerName.trim()) { this.errorMsg.set('Informe seu codinome de agente.'); return; }
     this.savePrefs();
     this.loading.set(true);
     this.errorMsg.set('');
 
-    // gera puzzle + solução localmente antes de criar a sala
     const solution = this.sudoku.generateSolution();
     const puzzle   = this.sudoku.generatePuzzle(solution, this.difficulty);
-
     this.leaderPuzzle   = puzzle;
     this.leaderSolution = solution;
 
-    this.api.createRoom(this.playerName.trim(), puzzle, solution).subscribe({
+    this.api.createRoom(this.playerName.trim(), this.difficulty, puzzle, solution).subscribe({
       next: res => {
         this.loading.set(false);
         if (!res.success || !res.data) { this.errorMsg.set(res.message || 'Erro ao criar sala.'); return; }
@@ -105,13 +116,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
       },
       error: err => {
         this.loading.set(false);
-        const msg = err?.error?.message ?? 'Erro ao criar sala. Verifique a conexão.';
-        this.errorMsg.set(msg);
+        this.errorMsg.set(err?.error?.message ?? 'Erro ao criar sala. Verifique a conexão.');
       },
     });
   }
 
-  // ── Entrar na sala ────────────────────────────────────────────────────────
+  // ── Entrar na sala ───────────────────────────────────────────────────────
   joinRoom(): void {
     if (!this.playerName.trim()) { this.errorMsg.set('Informe seu codinome de agente.'); return; }
     if (!this.joinPin.trim())    { this.errorMsg.set('Informe o código de acesso (PIN).'); return; }
@@ -125,27 +135,50 @@ export class LobbyComponent implements OnInit, OnDestroy {
         if (!res.success || !res.data) { this.errorMsg.set(res.message || 'PIN inválido.'); return; }
 
         const { player } = res.data;
-        this.roomPin.set(this.joinPin.trim());
+        const pin = this.joinPin.trim();
+        this.roomPin.set(pin);
         this.isLeader.set(player.is_leader);
-        this.players.update(list => {
-          const exists = list.some(p => p.id === player.id);
-          return exists ? list : [...list, { id: player.id, name: player.name, is_leader: player.is_leader }];
-        });
 
-        this.gs.setMultiplayerContext(this.joinPin.trim(), player.id, player.is_leader, player.name);
+        // adiciona o próprio jogador primeiro
+        this.players.set([{ id: player.id, name: player.name, is_leader: player.is_leader }]);
+
+        this.gs.setMultiplayerContext(pin, player.id, player.is_leader, player.name);
         this.ws.connect();
-        this.ws.subscribeToRoom(this.joinPin.trim());
+        this.ws.subscribeToRoom(pin);
         this.mode.set('waiting');
+
+        // busca jogadores que já estavam na sala antes de entrar
+        this.loadExistingPlayers(pin, player.id);
       },
       error: err => {
         this.loading.set(false);
-        const msg = err?.error?.message ?? 'PIN inválido ou sala não encontrada.';
-        this.errorMsg.set(msg);
+        this.errorMsg.set(err?.error?.message ?? 'PIN inválido ou sala não encontrada.');
       },
     });
   }
 
-  // ── Líder inicia o jogo ───────────────────────────────────────────────────
+  // busca estado atual da sala para mostrar jogadores já presentes
+  private loadExistingPlayers(pin: string, myId: number): void {
+    this.api.getRoomState(pin, myId).subscribe({
+      next: res => {
+        if (!res.success || !res.data) return;
+        const existing = (res.data.players ?? []).map((p: any) => ({
+          id:        p.id,
+          name:      p.name,
+          is_leader: p.is_leader,
+        }));
+        // merge sem duplicatas
+        this.players.set(
+          existing.filter((p: any, i: number, arr: any[]) =>
+            arr.findIndex((x: any) => x.id === p.id) === i
+          )
+        );
+      },
+      error: () => { /* falha silenciosa — lista parcial ainda funciona */ },
+    });
+  }
+
+  // ── Iniciar jogo (líder) ─────────────────────────────────────────────────
   startGame(): void {
     const s = this.gs.state();
     if (!s.isLeader || !s.playerId) return;
@@ -156,18 +189,20 @@ export class LobbyComponent implements OnInit, OnDestroy {
       next: res => {
         this.loading.set(false);
         if (!res.success) { this.errorMsg.set(res.message || 'Erro ao iniciar.'); return; }
-        // líder já tem puzzle gerado localmente
         this.gs.startFromPuzzle(this.leaderPuzzle, this.leaderSolution, this.difficulty);
         this.router.navigate(['/game']);
       },
-      error: () => { this.loading.set(false); this.errorMsg.set('Erro ao iniciar o protocolo.'); },
+      error: () => { this.loading.set(false); this.errorMsg.set('Erro ao ativar o protocolo.'); },
     });
   }
 
+  get inviteLink(): string {
+    return this.roomPin() ? `${window.location.origin}/lobby?pin=${this.roomPin()}` : '';
+  }
+
   copyInviteLink(): void {
-    const url = `${window.location.origin}?pin=${this.roomPin()}`;
+    const url = `${window.location.origin}/lobby?pin=${this.roomPin()}`;
     navigator.clipboard?.writeText(url).catch(() => {
-      // fallback para browsers sem clipboard API
       const el = document.createElement('input');
       el.value = url;
       document.body.appendChild(el);
@@ -177,7 +212,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Eventos WebSocket ─────────────────────────────────────────────────────
+  // ── Eventos WebSocket ────────────────────────────────────────────────────
   private handleWsEvent(type: string, payload: unknown): void {
     switch (type) {
       case 'PlayerJoined': {
@@ -188,25 +223,22 @@ export class LobbyComponent implements OnInit, OnDestroy {
         });
         break;
       }
-
       case 'PlayerLeft': {
         const p = payload as PlayerLeftPayload;
         this.players.update(list => list.filter(x => x.id !== p.playerId));
         break;
       }
-
       case 'GameStarted': {
-        // não-líderes recebem puzzle+solution aqui e vão para o jogo
         if (!this.isLeader()) {
-          const p = payload as GameStartedPayload & { solution?: number[][] };
+          const p = payload as GameStartedPayload;
           if (p.puzzle && p.solution) {
-            this.gs.startFromPuzzle(p.puzzle, p.solution, this.difficulty);
+            const diff = (p.difficulty as Difficulty) ?? 'medium';
+            this.gs.startFromPuzzle(p.puzzle, p.solution, diff);
           }
           this.router.navigate(['/game']);
         }
         break;
       }
-
       case 'LeaderChanged': {
         const p = payload as { newLeaderId: number; newLeaderName: string };
         const myId = this.gs.state().playerId;

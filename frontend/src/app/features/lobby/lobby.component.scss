@@ -332,6 +332,22 @@
   letter-spacing: 0.05em;
 }
 
+// ── Banner de convite ─────────────────────────────────────
+.invite-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(0,255,136,0.06);
+  border: 1px solid rgba(0,255,136,0.25);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: var(--fg);
+
+  .invite-icon { font-size: 1.2rem; color: var(--accent); }
+  strong { color: var(--accent); letter-spacing: 0.1em; }
+}
+
 // ── Sala de Espera ──────────────────────────────────────
 .waiting-room {
   display: flex;
@@ -342,15 +358,26 @@
 }
 
 .pin-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
   background: var(--surface);
   border: 1px solid rgba(0,255,136,0.35);
   border-radius: 10px;
-  padding: 1.6rem;
-  text-align: center;
+  padding: 1.25rem 1.5rem;
+}
+
+.pin-share {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.pin-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  flex: 1;
 }
 
 .pin-label {
@@ -411,6 +438,9 @@
 }
 
 .agents-roster {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;

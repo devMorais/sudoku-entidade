@@ -17,9 +17,10 @@ class GameController extends Controller
     public function createRoom(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:30',
-            'puzzle'   => 'required|array',
-            'solution' => 'required|array',
+            'name'       => 'required|string|max:30',
+            'puzzle'     => 'required|array',
+            'solution'   => 'required|array',
+            'difficulty' => 'sometimes|in:easy,medium,hard',
         ]);
 
         // PIN único entre salas ativas
@@ -33,10 +34,11 @@ class GameController extends Controller
         } while (Room::where('pin', $pin)->where('status', '!=', 'finished')->exists());
 
         $room = Room::create([
-            'pin'      => $pin,
-            'puzzle'   => $request->puzzle,
-            'solution' => $request->solution,
-            'status'   => 'waiting',
+            'pin'        => $pin,
+            'puzzle'     => $request->puzzle,
+            'solution'   => $request->solution,
+            'status'     => 'waiting',
+            'difficulty' => $request->input('difficulty', 'medium'),
         ]);
 
         $player = Player::create([
@@ -128,7 +130,7 @@ class GameController extends Controller
     }
 
     // ─── Líder inicia o jogo — broadcast para todos ──────────────────────────
-    public function startGame(Request $request, $pin)
+    public function startGame(Request $request, string $pin)
     {
         $room = Room::where('pin', $pin)->where('status', 'waiting')->first();
 
@@ -143,7 +145,7 @@ class GameController extends Controller
     }
 
     // ─── Primeiro a completar reivindica a vitória ───────────────────────────
-    public function claimVictory(Request $request, $pin)
+    public function claimVictory(Request $request, string $pin)
     {
         $updated = DB::table('rooms')
             ->where('pin', $pin)
@@ -165,7 +167,7 @@ class GameController extends Controller
     }
 
     // ─── Jogador esgotou erros — eliminação ──────────────────────────────────
-    public function eliminatePlayer(Request $request, $pin)
+    public function eliminatePlayer(Request $request, string $pin)
     {
         $player = Player::find($request->player_id);
         if ($player && !$player->finished_at) {
@@ -178,7 +180,7 @@ class GameController extends Controller
     }
 
     // ─── Estado atual da sala (para reconexão após F5) ───────────────────────
-    public function roomState(Request $request, $pin)
+    public function roomState(Request $request, string $pin)
     {
         $room = Room::where('pin', $pin)->firstOrFail();
         $players = $room->players()->get(['id', 'name', 'is_leader', 'finished_at']);

@@ -20,8 +20,9 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'http://localhost:4200',               // Angular dev server
-        'https://sudoku.devmorais.com.br',     // produção
+        'http://localhost:4200',
+        'https://localhost:4200',
+        'https://sudoku.devmorais.com.br',
     ],
 
     'allowed_origins_patterns' => [],

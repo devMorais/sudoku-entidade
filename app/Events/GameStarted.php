@@ -29,9 +29,10 @@ class GameStarted implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'pin'      => $this->room->pin,
-            'puzzle'   => $this->room->puzzle,
-            'solution' => $this->room->solution,
+            'pin'        => $this->room->pin,
+            'puzzle'     => $this->room->puzzle,
+            'solution'   => $this->room->solution,
+            'difficulty' => $this->room->difficulty ?? 'medium',
         ];
     }
 }

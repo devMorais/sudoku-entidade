@@ -33,7 +33,7 @@
                 <span class="tut-icon">⚔️</span>
                 <h3>Battle Royale Síncrono</h3>
                 <p>Todos na sala resolvem o mesmo grid. O primeiro que decifrar o código tranca a rede e vence. Cometer
-                    3 erros causa a sua <strong>eliminação imediata</strong> do servidor.</p>
+                    5 erros causa a sua <strong>eliminação imediata</strong> do servidor.</p>
             </div>
         </div>
 

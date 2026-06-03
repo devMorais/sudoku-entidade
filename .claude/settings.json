@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc -l)",
+      "Bash(npm --version)",
+      "Bash(ng version *)",
+      "Bash(ng new *)",
+      "Bash(php artisan *)"
+    ]
+  }
+}
