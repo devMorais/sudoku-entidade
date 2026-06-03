@@ -1,0 +1,78 @@
+:host {
+  container-type: size;
+  display: block;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  background: var(--cell-bg, #111);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.08s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
+  &.given      { background: var(--cell-given, #0d0d0d); }
+  &.selected   { background: var(--cell-selected, #0d1f12) !important; }
+  &.hl-line    { background: var(--cell-hl, #141414); }
+  &.hl-block   { background: var(--cell-hl, #141414); }
+  &.hl-same    { background: var(--cell-same, #131308); }
+  &.error      { background: rgba(255, 50, 50, 0.14); }
+  &.shake      { animation: cell-shake 0.38s ease; }
+}
+
+/* Valor principal — escala com o tamanho da célula via font-size relativo ao container */
+.cell-value {
+  font-size: clamp(0.8rem, 3.5cqi, 1.5rem);
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+
+  &.user-fill { color: var(--user-color, #7ec8e3); }
+}
+
+/* Fallback para browsers sem container queries */
+@supports not (font-size: 1cqi) {
+  .cell-value { font-size: clamp(0.75rem, 2.4vw, 1.4rem); }
+}
+
+/* Grade 3×3 de notas */
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  padding: 1px;
+  box-sizing: border-box;
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.38rem, 1cqi, 0.55rem);
+  color: var(--muted);
+  line-height: 1;
+  opacity: 0;
+
+  &.visible { opacity: 0.8; }
+}
+
+@supports not (font-size: 1cqi) {
+  .note { font-size: clamp(0.35rem, 1.1vw, 0.5rem); }
+}
+
+/* Animação de erro */
+@keyframes cell-shake {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-5px); }
+  40%  { transform: translateX(5px); }
+  60%  { transform: translateX(-3px); }
+  80%  { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}

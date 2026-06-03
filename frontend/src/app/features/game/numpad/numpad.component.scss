@@ -1,0 +1,104 @@
+/* ── Desktop ── */
+.numpad-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: min(96vw, 500px);
+}
+
+.controls-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ctrl-btn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: clamp(0.6rem, 1.6vw, 0.72rem);
+  letter-spacing: 0.06em;
+  padding: 0.55rem 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  white-space: nowrap;
+  touch-action: manipulation;
+  min-height: 44px;
+
+  &:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  &.active { border-color: var(--accent); color: var(--accent); background: rgba(0,255,136,0.08); }
+  &.danger:hover { border-color: #ff4444; color: #ff4444; }
+  &:disabled { opacity: 0.3; cursor: not-allowed; }
+}
+
+/* Grade 5 colunas: [1][2][3][4][5] / [6][7][8][9][⌫] */
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.35rem;
+}
+
+.num-btn {
+  aspect-ratio: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+
+  &:hover  { border-color: var(--accent); color: var(--accent); background: rgba(0,255,136,0.06); }
+  &:active { transform: scale(0.92); background: rgba(0,255,136,0.14); }
+
+  &.erase {
+    color: var(--muted);
+    font-size: clamp(0.95rem, 3vw, 1.1rem);
+    &:hover { border-color: #ff4444; color: #ff4444; }
+  }
+}
+
+/* ── Mobile: numpad ocupa a largura do board, botões maiores ── */
+@media (max-width: 768px) {
+  .numpad-wrapper {
+    width: min(96vw, calc(100dvh - 298px));
+    gap: 0.4rem;
+  }
+
+  .numpad { gap: 0.3rem; }
+
+  .num-btn {
+    /* botões altos o suficiente para toque fácil */
+    min-height: 48px;
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
+    border-radius: 6px;
+  }
+
+  .ctrl-btn {
+    min-height: 42px;
+    font-size: clamp(0.58rem, 1.8vw, 0.7rem);
+    padding: 0.4rem 0.2rem;
+  }
+}
+
+/* Landscape em celular: numpad horizontal apertado */
+@media (max-height: 600px) {
+  .numpad-wrapper {
+    width: min(44vw, 280px);
+  }
+
+  .num-btn { min-height: 36px; font-size: 1rem; }
+  .ctrl-btn { min-height: 34px; font-size: 0.55rem; }
+}

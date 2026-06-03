@@ -1,0 +1,91 @@
+<div class="donation-screen">
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <button class="btn-back" (click)="back()">← ABORTAR E VOLTAR</button>
+
+  <header class="donation-header">
+    <div class="classified-tag">⬛ FINANCIAMENTO DE OPERAÇÃO — CONFIDENCIAL</div>
+    <h1 class="donation-title">APOIAR A RESISTÊNCIA</h1>
+    <p class="donation-sub">
+      A Entidade não dorme. Este servidor custa dinheiro real para manter a missão no ar.
+      Se o jogo te deu ao menos um momento de adrenalina — considere apoiar.
+    </p>
+  </header>
+
+  @if (stats()) {
+    <div class="intel-bar">
+      <span class="intel-item">
+        <span class="intel-dot"></span>
+        {{ stats()!.total_donations }} agentes financiaram a resistência
+      </span>
+      <span class="intel-sep">·</span>
+      <span class="intel-item accent">
+        {{ stats()!.total_amount_reais }} arrecadados
+      </span>
+    </div>
+  }
+
+  <section class="amount-section">
+    <p class="section-code">// SELECIONE O NÍVEL DE APOIO</p>
+
+    <div class="amount-cards">
+      <button class="amount-card" [class.active]="isActive(500)" (click)="selectPreset(500)">
+        <span class="amount-code">OP-ALPHA</span>
+        <span class="amount-value">R$ 5</span>
+        <span class="amount-label">☕ Café para o agente</span>
+      </button>
+      <button class="amount-card featured" [class.active]="isActive(1000)" (click)="selectPreset(1000)">
+        <span class="amount-code">OP-BRAVO</span>
+        <span class="amount-value">R$ 10</span>
+        <span class="amount-label">⚡ Energia pro servidor</span>
+      </button>
+      <button class="amount-card" [class.active]="isActive(2000)" (click)="selectPreset(2000)">
+        <span class="amount-code">OP-CHARLIE</span>
+        <span class="amount-value">R$ 20</span>
+        <span class="amount-label">🚀 Missão completa</span>
+      </button>
+    </div>
+
+    <div class="custom-field">
+      <span class="custom-label">// VALOR PERSONALIZADO (R$)</span>
+      <div class="custom-wrap">
+        <span class="custom-prefix">R$</span>
+        <input type="number" [(ngModel)]="customAmount" (input)="onCustomInput()"
+          placeholder="0,00" min="1" step="0.01" class="custom-input" />
+      </div>
+    </div>
+  </section>
+
+  <section class="agent-id-section">
+    <p class="section-code">// IDENTIFICAÇÃO DO AGENTE (OPCIONAL)</p>
+    <input [(ngModel)]="donorName"  placeholder="Seu codinome (padrão: Agente Anônimo)"
+      class="agent-field" maxlength="60" />
+    <input [(ngModel)]="donorEmail" placeholder="Email para recibo da missão"
+      type="email" class="agent-field" />
+  </section>
+
+  <div class="total-block">
+    <span class="total-label">TOTAL DO APOIO</span>
+    <span class="total-amount">{{ formatReais(getAmount()) }}</span>
+  </div>
+
+  @if (error()) {
+    <p class="error-msg">⚠ {{ error() }}</p>
+  }
+
+  <button class="btn-confirm" [disabled]="loading()" (click)="confirm()">
+    @if (loading()) {
+      ⟳ PROCESSANDO TRANSFERÊNCIA...
+    } @else {
+      ◈ FINANCIAR A RESISTÊNCIA → INFINITYPAY
+    }
+  </button>
+
+  <p class="security-note">
+    🔒 Pagamento seguro via InfinityPay · Dados de cartão não são armazenados neste servidor
+  </p>
+
+  <div class="film-quote">
+    <em>"A única coisa que a Entidade não previu foi a generosidade humana."</em>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+/* ── Desktop: board + numpad lado a lado ── */
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 1rem;
+  gap: 1rem;
+  box-sizing: border-box;
+}
+
+.arena {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  flex: 1;
+}
+
+/* ── Landscape: board + numpad lado a lado (como desktop) ── */
+@media (max-height: 600px) and (orientation: landscape) {
+  .game-screen {
+    height: 100dvh;
+    overflow: hidden;
+    padding: 0.3rem 0.5rem;
+    gap: 0.3rem;
+    flex-direction: column;
+  }
+
+  .arena {
+    flex-direction: row;   /* lado a lado em landscape */
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    overflow: hidden;
+  }
+}
+
+/* ── Mobile portrait: tudo empilhado, sem scroll ── */
+@media (max-width: 768px) and (orientation: portrait) {
+  .game-screen {
+    height: 100dvh;
+    overflow: hidden;
+    padding: 0.4rem 0.4rem 0.5rem;
+    gap: 0.4rem;
+    justify-content: flex-start;
+  }
+
+  .arena {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    width: 100%;
+    /* garante que o conteúdo não ultrapasse a tela */
+    overflow: hidden;
+  }
+}

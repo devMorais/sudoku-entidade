@@ -1,0 +1,83 @@
+<div class="tutorial-screen">
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Cabeçalho classificado -->
+  <div class="classified-header">
+    <span class="classified-label">⬛ CLASSIFICADO</span>
+    <span class="classified-id">DOC-9×9-FINAL</span>
+  </div>
+
+  <!-- Logo principal -->
+  <div class="logo-block">
+    <div class="logo-text">ENTIDADE</div>
+    <div class="logo-vs">vs.</div>
+    <div class="logo-agent">AGENTE ETHAN HUNT</div>
+  </div>
+
+  <!-- Terminal de boot -->
+  <div class="terminal-line">
+    <span class="cursor-prefix">_</span>
+    <span class="typed">{{ typedText() }}</span>
+    <span class="cursor-blink">▌</span>
+  </div>
+
+  <!-- Cards de briefing -->
+  @if (showCards()) {
+    <div class="briefing-cards fade-up">
+
+      <div class="brief-card">
+        <div class="brief-number">01</div>
+        <div class="brief-icon">◈</div>
+        <div class="brief-title">A MATRIZ LÓGICA</div>
+        <p>
+          A Entidade opera em um tabuleiro 9×9. Cada linha, coluna e bloco 3×3
+          contém os dígitos 1 a 9 sem repetição. Ela já calculou todas as possibilidades —
+          sua missão é preencher os espaços antes que o tempo acabe.
+        </p>
+      </div>
+
+      <div class="brief-card">
+        <div class="brief-number">02</div>
+        <div class="brief-icon">⬡</div>
+        <div class="brief-title">A ENTIDADE IA</div>
+        <p>
+          Como no filme, a Entidade prevê cada movimento. Cada erro que você comete
+          aproxima sua eliminação. O suporte técnico <strong>BENJI</strong> oferece notas táticas
+          e até 3 revelações de células — use com sabedoria.
+        </p>
+      </div>
+
+      <div class="brief-card">
+        <div class="brief-number">03</div>
+        <div class="brief-icon">⬟</div>
+        <div class="brief-title">PROTOCOLO PHANTOM</div>
+        <p>
+          No modo Battle Royale, múltiplos agentes recebem o mesmo puzzle simultaneamente.
+          O primeiro a completar a matriz vence. Os eliminados tornam-se espectadores.
+          Margem de erro: zero.
+        </p>
+      </div>
+
+    </div>
+  }
+
+  <!-- Rodapé com ação -->
+  @if (showBtn()) {
+    <div class="action-block fade-up">
+      <div class="mission-warning">
+        ⚠ Esta mensagem se autodestrutirá após a conclusão da missão.
+      </div>
+      <button class="btn-accept" (click)="proceed()">
+        <span class="btn-prefix">▶</span> ACEITAR MISSÃO
+      </button>
+      <button class="btn-support" (click)="donation()">
+        ◈ APOIAR A RESISTÊNCIA
+      </button>
+    </div>
+  }
+
+  <!-- Créditos do filme -->
+  <div class="film-credit">
+    Baseado em <em>Missão: Impossível — O Acerto Final</em> (2025)
+  </div>
+</div>

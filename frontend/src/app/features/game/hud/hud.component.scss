@@ -1,0 +1,74 @@
+/* ── HUD: barra horizontal com todos os itens ── */
+.hud {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: nowrap;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  flex-shrink: 0;
+
+  &.progress-item {
+    flex: 1;
+    min-width: 70px;
+  }
+}
+
+.hud-label {
+  font-size: clamp(0.42rem, 1.2vw, 0.6rem);
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.hud-value {
+  font-size: clamp(0.9rem, 3vw, 1.15rem);
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+
+  &.small  { font-size: clamp(0.7rem, 2vw, 0.9rem); }
+  &.critical { color: #ff4444; animation: blink 0.8s infinite; }
+}
+
+.progress-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+/* ── Mobile: reduz padding e esconde label de progresso ── */
+@media (max-width: 480px) {
+  .hud {
+    padding: 0.35rem 0.5rem;
+    gap: 0.5rem;
+  }
+
+  /* esconde label longo de progresso, mantém barra */
+  .hud-item.progress-item .hud-label { display: none; }
+}

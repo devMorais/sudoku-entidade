@@ -1,0 +1,229 @@
+<div class="lobby-screen">
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Cabeçalho de todas as telas -->
+  <div class="lobby-header">
+    <span class="logo-mini">ENTIDADE</span>
+    <span class="header-sep">|</span>
+    <span class="header-sub">CENTRAL DE MISSÕES</span>
+  </div>
+
+  <!-- ── SELEÇÃO DE PROTOCOLO ── -->
+  @if (mode() === 'select') {
+    <div class="protocol-select fade-up">
+      <p class="section-tag">// SELECIONE SEU PROTOCOLO DE OPERAÇÃO</p>
+      <h2 class="section-title">COMO VOCÊ QUER ENFRENTAR A ENTIDADE?</h2>
+
+      <div class="protocol-cards">
+
+        <button class="proto-card" (click)="selectMode('solo')">
+          <div class="proto-top">
+            <span class="proto-code">OP-01</span>
+            <span class="proto-status solo">LIBERADO</span>
+          </div>
+          <div class="proto-icon">◈</div>
+          <div class="proto-name">OPERAÇÃO SOLO</div>
+          <p class="proto-desc">
+            Você vs. a Entidade. Escolha a dificuldade e resolva o puzzle
+            antes que o tempo acabe. Três dicas do BENJI disponíveis.
+          </p>
+          <div class="proto-enter">INICIAR →</div>
+        </button>
+
+        <button class="proto-card featured" (click)="selectMode('create')">
+          <div class="proto-top">
+            <span class="proto-code">OP-02</span>
+            <span class="proto-status phantom">PROTOCOLO PHANTOM</span>
+          </div>
+          <div class="proto-icon">⬡</div>
+          <div class="proto-name">LIDERAR MISSÃO</div>
+          <p class="proto-desc">
+            Crie uma sala Battle Royale. Compartilhe o PIN com sua equipe
+            e inicie o protocolo quando todos os agentes estiverem prontos.
+          </p>
+          <div class="proto-enter">CRIAR SALA →</div>
+        </button>
+
+        <button class="proto-card" (click)="selectMode('join')">
+          <div class="proto-top">
+            <span class="proto-code">OP-03</span>
+            <span class="proto-status infiltrate">INFILTRAÇÃO</span>
+          </div>
+          <div class="proto-icon">⬟</div>
+          <div class="proto-name">INFILTRAR MISSÃO</div>
+          <p class="proto-desc">
+            Recebeu um PIN do líder? Insira o código de acesso e
+            se junte à missão. O primeiro agente a completar o puzzle vence.
+          </p>
+          <div class="proto-enter">ENTRAR →</div>
+        </button>
+
+      </div>
+
+      <p class="entity-warning">
+        ⚠ A ENTIDADE está monitorando. Cada erro é previsto. Cada segundo conta.
+      </p>
+    </div>
+  }
+
+  <!-- ── SOLO ── -->
+  @if (mode() === 'solo') {
+    <div class="mission-form fade-up">
+      <div class="form-tag">// OPERAÇÃO SOLO — AGENTE INDEPENDENTE</div>
+      <h2 class="form-title">SELECIONE O NÍVEL DE AMEAÇA</h2>
+
+      <div class="threat-levels">
+        <button class="threat-btn"
+          [class.active]="difficulty === 'easy'"
+          (click)="difficulty = 'easy'">
+          <span class="threat-code">NÍVEL-1</span>
+          <span class="threat-name">FÁCIL</span>
+          <span class="threat-detail">44 pistas · 10min · 7 erros</span>
+        </button>
+        <button class="threat-btn"
+          [class.active]="difficulty === 'medium'"
+          (click)="difficulty = 'medium'">
+          <span class="threat-code">NÍVEL-2</span>
+          <span class="threat-name">MÉDIO</span>
+          <span class="threat-detail">34 pistas · 8min · 5 erros</span>
+        </button>
+        <button class="threat-btn"
+          [class.active]="difficulty === 'hard'"
+          (click)="difficulty = 'hard'">
+          <span class="threat-code">NÍVEL-3</span>
+          <span class="threat-name">DIFÍCIL</span>
+          <span class="threat-detail">26 pistas · 6min · 3 erros</span>
+        </button>
+      </div>
+
+      <button class="btn-mission" (click)="startSolo()">
+        ▶ INICIAR OPERAÇÃO
+      </button>
+      <button class="btn-back-link" (click)="mode.set('select')">← ABORTAR E VOLTAR</button>
+    </div>
+  }
+
+  <!-- ── CRIAR SALA ── -->
+  @if (mode() === 'create') {
+    <div class="mission-form fade-up">
+      <div class="form-tag">// PROTOCOLO PHANTOM — BATTLE ROYALE SÍNCRONO</div>
+      <h2 class="form-title">DESIGNAR LÍDER DA MISSÃO</h2>
+
+      <label class="field-label">SEU CODINOME DE AGENTE</label>
+      <input class="field-input"
+        [(ngModel)]="playerName"
+        placeholder="Ex: Ethan Hunt..."
+        maxlength="30"
+        autocomplete="off" />
+
+      <label class="field-label">NÍVEL DE AMEAÇA DA MISSÃO</label>
+      <div class="threat-levels compact">
+        <button class="threat-btn" [class.active]="difficulty === 'easy'"   (click)="difficulty = 'easy'">FÁCIL</button>
+        <button class="threat-btn" [class.active]="difficulty === 'medium'" (click)="difficulty = 'medium'">MÉDIO</button>
+        <button class="threat-btn" [class.active]="difficulty === 'hard'"   (click)="difficulty = 'hard'">DIFÍCIL</button>
+      </div>
+
+      @if (errorMsg()) { <p class="error-msg">⚠ {{ errorMsg() }}</p> }
+
+      <button class="btn-mission" [disabled]="loading()" (click)="createRoom()">
+        {{ loading() ? '⟳ GERANDO PROTOCOLO...' : '⬡ CRIAR SALA DE MISSÃO' }}
+      </button>
+      <button class="btn-back-link" (click)="mode.set('select')">← ABORTAR E VOLTAR</button>
+    </div>
+  }
+
+  <!-- ── ENTRAR NA SALA ── -->
+  @if (mode() === 'join') {
+    <div class="mission-form fade-up">
+      <div class="form-tag">// INFILTRAÇÃO — ACESSO AUTORIZADO</div>
+      <h2 class="form-title">IDENTIFICAÇÃO DO AGENTE</h2>
+
+      <label class="field-label">SEU CODINOME</label>
+      <input class="field-input"
+        [(ngModel)]="playerName"
+        placeholder="Ex: Luther Stickell..."
+        maxlength="30"
+        autocomplete="off" />
+
+      <label class="field-label">CÓDIGO DE ACESSO (PIN)</label>
+      <input class="field-input pin-input"
+        [(ngModel)]="joinPin"
+        placeholder="• • • •"
+        maxlength="4"
+        inputmode="numeric"
+        autocomplete="off" />
+
+      @if (errorMsg()) { <p class="error-msg">⚠ {{ errorMsg() }}</p> }
+
+      <button class="btn-mission" [disabled]="loading()" (click)="joinRoom()">
+        {{ loading() ? '⟳ VERIFICANDO ACESSO...' : '⬟ INFILTRAR NA MISSÃO' }}
+      </button>
+      <button class="btn-back-link" (click)="mode.set('select')">← ABORTAR E VOLTAR</button>
+    </div>
+  }
+
+  <!-- ── SALA DE ESPERA ── -->
+  @if (mode() === 'waiting') {
+    <div class="waiting-room fade-up">
+      <div class="form-tag">// AGUARDANDO AGENTES — SALA ATIVA</div>
+
+      <div class="pin-block">
+        <div class="pin-label">CÓDIGO DE ACESSO DA MISSÃO</div>
+        <div class="pin-code">{{ roomPin() }}</div>
+        <button class="pin-copy-btn" (click)="copyInviteLink()">
+          ⧉ COPIAR LINK DE INFILTRAÇÃO
+        </button>
+      </div>
+
+      <div class="agents-status">
+        <div class="agents-label">
+          AGENTES CONFIRMADOS: <strong>{{ players().length }}/8</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="(players().length / 8) * 100"></div>
+        </div>
+      </div>
+
+      <div class="agents-roster">
+        @for (p of players(); track p.id) {
+          <div class="roster-item">
+            <span class="roster-dot"></span>
+            <span class="roster-name">{{ p.name }}</span>
+            @if (p.is_leader) {
+              <span class="roster-badge">◈ LÍDER</span>
+            }
+          </div>
+        }
+        @if (players().length === 0) {
+          <p class="roster-empty">Aguardando agentes infiltrarem...</p>
+        }
+      </div>
+
+      @if (isLeader()) {
+        <div class="leader-actions">
+          @if (errorMsg()) { <p class="error-msg">⚠ {{ errorMsg() }}</p> }
+          <p class="leader-hint">
+            Compartilhe o PIN <strong>{{ roomPin() }}</strong> com sua equipe antes de iniciar.
+          </p>
+          <button class="btn-mission" [disabled]="loading() || players().length < 1" (click)="startGame()">
+            {{ loading() ? '⟳ INICIANDO PROTOCOLO...' : '▶ ATIVAR PROTOCOLO PHANTOM' }}
+          </button>
+        </div>
+      } @else {
+        <div class="standby-msg">
+          <span class="standby-dot"></span>
+          Aguardando o líder ativar o protocolo...
+        </div>
+      }
+
+      <button class="btn-back-link" (click)="mode.set('select')">← ABANDONAR MISSÃO</button>
+    </div>
+  }
+
+  <!-- Rodapé -->
+  <div class="lobby-footer">
+    <span>ENTIDADE SUDOKU</span>
+    <span class="footer-sep">·</span>
+    <span>PROTOCOLO ATIVO</span>
+  </div>
+</div>

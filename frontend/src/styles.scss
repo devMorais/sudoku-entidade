@@ -1,0 +1,111 @@
+/* ===================================================
+   Entidade Sudoku — Global Styles
+   Tema: cyberpunk/espionagem, fundo preto, verde neon
+   =================================================== */
+
+:root {
+  --bg:           #0a0a0a;
+  --surface:      #111111;
+  --border:       #2e2e2e;
+  --fg:           #e8e8e8;
+  --muted:        #aaaaaa;
+  --accent:       #00ff88;
+  --accent-dim:   rgba(0, 255, 136, 0.15);
+  --user-color:   #7ec8e3;
+  --error-color:  #ff4444;
+
+  --cell-bg:       #0e0e0e;
+  --cell-given:    #0a0a0a;
+  --cell-selected: #0d1f12;
+  --cell-hl:       #121212;
+  --cell-same:     #131308;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  height: 100%;
+  background: #0a0a0a;
+}
+
+body {
+  height: 100%;
+  min-height: 100dvh;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Courier New', 'Lucida Console', monospace;
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+/* Reset global */
+button, input {
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Impede rubber-band scroll no iOS fora do jogo */
+html { overscroll-behavior: none; }
+
+/* Safe area para iPhone com notch */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+.btn-primary {
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  padding: 0.75rem 2rem;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-dim);
+    box-shadow: 0 0 20px rgba(0,255,136,0.25);
+  }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s;
+
+  &:hover { border-color: var(--accent); color: var(--accent); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.4s ease forwards; }

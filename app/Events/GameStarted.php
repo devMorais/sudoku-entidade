@@ -13,22 +13,25 @@ class GameStarted implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $room;
-
-    public function __construct(Room $room)
-    {
-        $this->room = $room;
-    }
+    public function __construct(public Room $room) {}
 
     public function broadcastOn(): array
     {
-        return [
-            new Channel('room.' . $this->room->pin),
-        ];
+        return [new Channel('room.' . $this->room->pin)];
     }
 
     public function broadcastAs(): string
     {
         return 'GameStarted';
+    }
+
+    // Envia puzzle + solution para que todos possam jogar
+    public function broadcastWith(): array
+    {
+        return [
+            'pin'      => $this->room->pin,
+            'puzzle'   => $this->room->puzzle,
+            'solution' => $this->room->solution,
+        ];
     }
 }

@@ -1,0 +1,43 @@
+/* ── Desktop ── */
+.board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  width: min(96vw, 500px);
+  height: min(96vw, 500px);
+  border: 2px solid var(--accent);
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &.spectator {
+    pointer-events: none;
+    opacity: 0.75;
+    filter: grayscale(0.3);
+  }
+}
+
+/* bordas dos blocos 3×3 */
+:host ::ng-deep .border-right  .cell { border-right:  2px solid var(--accent) !important; }
+:host ::ng-deep .border-bottom .cell { border-bottom: 2px solid var(--accent) !important; }
+
+/* ── Mobile ──
+   O board deve caber na tela junto com HUD (≈56px) + controles (≈46px) + numpad (≈160px) + gaps (≈36px)
+   Total não-board ≈ 298px → board = min(96vw, 100dvh - 298px)
+*/
+@media (max-width: 768px) {
+  .board {
+    --board-size: min(96vw, calc(100dvh - 298px));
+    width: var(--board-size);
+    height: var(--board-size);
+  }
+}
+
+/* Telas muito baixas (landscape) */
+@media (max-height: 600px) {
+  .board {
+    --board-size: min(55vw, calc(100dvh - 120px));
+    width: var(--board-size);
+    height: var(--board-size);
+  }
+}

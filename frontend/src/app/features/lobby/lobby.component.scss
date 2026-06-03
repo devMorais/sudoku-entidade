@@ -1,0 +1,550 @@
+.lobby-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 1.5rem 2rem 4rem;
+  gap: 1.75rem;
+  overflow: hidden;
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px
+  );
+  z-index: 0;
+}
+
+* { position: relative; z-index: 1; }
+
+// ── Header ─────────────────────────────────────────────
+.lobby-header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+.logo-mini {
+  color: var(--accent);
+  font-weight: 900;
+  font-size: 0.9rem;
+  text-shadow: 0 0 10px var(--accent);
+}
+
+.header-sep { opacity: 0.3; }
+.header-sub { font-size: 0.7rem; }
+
+// ── Tags de seção ───────────────────────────────────────
+.section-tag {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+}
+
+.section-title {
+  font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+  letter-spacing: 0.12em;
+  color: var(--fg);
+  font-weight: 700;
+  text-align: center;
+}
+
+.form-tag {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-family: 'Courier New', monospace;
+  opacity: 0.9;
+  margin-bottom: -0.3rem;
+}
+
+.form-title {
+  font-size: clamp(1.2rem, 3.5vw, 1.7rem);
+  letter-spacing: 0.12em;
+  color: var(--fg);
+  font-weight: 700;
+}
+
+// ── Protocolo Select ────────────────────────────────────
+.protocol-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 960px;
+  width: 100%;
+}
+
+.protocol-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.proto-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.6rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s;
+  overflow: hidden;
+  font-family: inherit;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,255,136,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  &:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,255,136,0.12);
+  }
+
+  &.featured {
+    border-color: rgba(0,255,136,0.35);
+    background: rgba(0,255,136,0.04);
+  }
+}
+
+.proto-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.25rem;
+}
+
+.proto-code {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+
+.proto-status {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  font-weight: 700;
+
+  &.solo      { color: #7ec8e3; border: 1px solid rgba(126,200,227,0.4); }
+  &.phantom   { color: var(--accent); border: 1px solid rgba(0,255,136,0.4); }
+  &.infiltrate{ color: #ff9f43; border: 1px solid rgba(255,159,67,0.4); }
+}
+
+.proto-icon {
+  font-size: 2rem;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent);
+  margin-top: 0.25rem;
+}
+
+.proto-name {
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.proto-desc {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0.2rem 0;
+}
+
+.proto-enter {
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin-top: 0.4rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.proto-card:hover .proto-enter { opacity: 1; }
+
+.entity-warning {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: #ff6b35;
+  opacity: 0.85;
+  font-style: italic;
+  text-align: center;
+}
+
+// ── Formulários ────────────────────────────────────────
+.mission-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: 520px;
+  width: 100%;
+}
+
+.field-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+
+.field-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-family: 'Courier New', monospace;
+  font-size: 1.05rem;
+  padding: 0.8rem 1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 14px rgba(0,255,136,0.12);
+  }
+
+  &::placeholder { color: var(--muted); opacity: 0.5; }
+
+  &.pin-input {
+    font-size: 2rem;
+    letter-spacing: 0.7em;
+    text-align: center;
+    padding: 0.65rem;
+  }
+}
+
+// ── Níveis de ameaça ────────────────────────────────────
+.threat-levels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+
+  &.compact .threat-btn {
+    padding: 0.6rem 0.3rem;
+    .threat-code, .threat-detail { display: none; }
+    .threat-name { font-size: 0.8rem; }
+  }
+}
+
+.threat-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);          /* ← garante que texto herde cor correta */
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.9rem 0.5rem;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,255,136,0.06);
+  }
+
+  &.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,255,136,0.1);
+    box-shadow: inset 0 0 0 1px var(--accent), 0 0 14px rgba(0,255,136,0.15);
+  }
+}
+
+.threat-code   { font-size: 0.62rem; letter-spacing: 0.12em; color: var(--muted); font-weight: 400; }
+.threat-name   { font-size: 0.9rem; letter-spacing: 0.08em; color: inherit; font-weight: 700; }
+.threat-detail { font-size: 0.62rem; letter-spacing: 0.04em; color: var(--muted); text-align: center; line-height: 1.5; font-weight: 400; }
+
+// ── Botões ─────────────────────────────────────────────
+.btn-mission {
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 1rem 1.5rem;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-dim);
+    box-shadow: 0 0 20px rgba(0,255,136,0.2);
+  }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+
+.btn-back-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  padding: 0.25rem;
+  text-align: center;
+  transition: color 0.2s;
+  &:hover { color: var(--accent); }
+}
+
+.error-msg {
+  font-size: 0.78rem;
+  color: #ff4444;
+  background: rgba(255,68,68,0.08);
+  border: 1px solid rgba(255,68,68,0.25);
+  border-radius: 4px;
+  padding: 0.45rem 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+// ── Sala de Espera ──────────────────────────────────────
+.waiting-room {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 520px;
+  width: 100%;
+}
+
+.pin-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface);
+  border: 1px solid rgba(0,255,136,0.35);
+  border-radius: 10px;
+  padding: 1.6rem;
+  text-align: center;
+}
+
+.pin-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+.pin-code {
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: 0.6em;
+  color: var(--accent);
+  text-shadow: 0 0 25px var(--accent), 0 0 60px rgba(0,255,136,0.3);
+  line-height: 1;
+}
+
+.pin-copy-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  padding: 0.35rem 0.75rem;
+  margin-top: 0.25rem;
+  transition: all 0.2s;
+  &:hover { border-color: var(--accent); color: var(--accent); }
+}
+
+.agents-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.agents-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  strong { color: var(--accent); }
+}
+
+.progress-track {
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 0.4s;
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.agents-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 60px;
+}
+
+.roster-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--fg);
+}
+
+.roster-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 5px var(--accent);
+  flex-shrink: 0;
+}
+
+.roster-name { flex: 1; }
+
+.roster-badge {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 0.15rem 0.4rem;
+}
+
+.roster-empty {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+  padding: 0.5rem 0;
+  animation: pulse 2s infinite;
+}
+
+.leader-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.leader-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  strong { color: var(--accent); }
+}
+
+.standby-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  animation: pulse 2s infinite;
+}
+
+.standby-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #ff9f43;
+  box-shadow: 0 0 6px #ff9f43;
+  animation: blink-dot 1.5s infinite;
+  flex-shrink: 0;
+}
+
+// ── Footer ─────────────────────────────────────────────
+.lobby-footer {
+  position: fixed;
+  bottom: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  opacity: 0.3;
+  .footer-sep { opacity: 0.4; }
+}
+
+// ── Animações ──────────────────────────────────────────
+.fade-up { animation: fade-up 0.4s ease forwards; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+@keyframes blink-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+
+// ── Responsivo ────────────────────────────────────────
+@media (max-width: 640px) {
+  .lobby-screen   { padding: 1rem 1rem 3rem; gap: 1.2rem; }
+
+  /* Cards de protocolo empilhados */
+  .protocol-cards { grid-template-columns: 1fr; gap: 0.75rem; }
+  .proto-card     { padding: 1.2rem; }
+  .proto-desc     { font-size: 0.82rem; }
+  .proto-name     { font-size: 0.8rem; }
+  .section-title  { font-size: clamp(1rem, 5vw, 1.4rem); }
+
+  /* Formulários mobile */
+  .mission-form   { gap: 0.7rem; }
+  .field-input    { font-size: 1rem; padding: 0.75rem 0.85rem; }
+  .field-input.pin-input { font-size: 1.6rem; }
+  .btn-mission    { font-size: 0.88rem; padding: 0.9rem 1rem; }
+  .form-title     { font-size: clamp(1rem, 5vw, 1.4rem); }
+
+  /* Níveis de dificuldade */
+  .threat-btn       { padding: 0.75rem 0.3rem; }
+  .threat-name      { font-size: 0.82rem; }
+  .threat-detail    { font-size: 0.56rem; }
+
+  /* PIN e sala de espera */
+  .pin-code         { font-size: 2.5rem; letter-spacing: 0.5em; }
+  .roster-item      { font-size: 0.85rem; }
+  .agents-label     { font-size: 0.68rem; }
+  .standby-msg      { font-size: 0.75rem; }
+  .leader-hint      { font-size: 0.7rem; }
+}
