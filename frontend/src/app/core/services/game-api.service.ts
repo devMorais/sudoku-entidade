@@ -60,6 +60,10 @@ export class GameApiService {
     );
   }
 
+  leaveRoom(pin: string, playerId: number): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(`${this.base}/rooms/${pin}/leave`, { player_id: playerId });
+  }
+
   createDonation(amount: number, donorName: string, donorEmail: string): Observable<ApiResponse<DonationResponse>> {
     return this.http.post<ApiResponse<DonationResponse>>(`${this.base}/donations`, {
       amount,

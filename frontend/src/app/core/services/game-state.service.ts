@@ -3,6 +3,8 @@ import { GameState, INITIAL_GAME_STATE, DIFFICULTY_CONFIG, CellPosition } from '
 import { Difficulty } from '../models/room.model';
 import { SudokuService } from './sudoku.service';
 
+const SESSION_KEY = 'sudoku_session';
+
 @Injectable({ providedIn: 'root' })
 export class GameStateService {
 
@@ -37,6 +39,8 @@ export class GameStateService {
   // inicializa partida a partir de puzzle externo (multiplayer)
   startFromPuzzle(puzzle: number[][], solution: number[][], difficulty: Difficulty): void {
     this.initGame(solution, puzzle, difficulty);
+    // persiste sessão logo após iniciar para suportar F5
+    setTimeout(() => this.saveSession(), 0);
   }
 
   private initGame(sol: number[][], puz: number[][], diff: Difficulty): void {
@@ -165,10 +169,40 @@ export class GameStateService {
   markGameOver(): void {
     this._state.update(s => ({ ...s, gameOver: true }));
     this.stopTimer();
+    this.clearSession();
   }
 
   setMultiplayerContext(roomPin: string, playerId: number, isLeader: boolean, playerName: string): void {
     this._state.update(s => ({ ...s, multiplayer: true, roomPin, playerId, isLeader, playerName }));
+  }
+
+  // persiste sessão multiplayer no localStorage para sobreviver F5
+  saveSession(): void {
+    const s = this._state();
+    if (!s.multiplayer || !s.playerId) return;
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({
+        roomPin:    s.roomPin,
+        playerId:   s.playerId,
+        playerName: s.playerName,
+        isLeader:   s.isLeader,
+        diff:       s.diff,
+      }));
+    } catch { /* ignora */ }
+  }
+
+  loadSavedSession(): { roomPin: string; playerId: number; playerName: string; isLeader: boolean; diff: Difficulty } | null {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  clearSession(): void {
+    try { localStorage.removeItem(SESSION_KEY); } catch { /* ignora */ }
   }
 
   setSpectator(): void {

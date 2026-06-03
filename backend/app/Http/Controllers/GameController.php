@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Room;
 use App\Models\Player;
 use App\Events\GameStarted;
+use App\Events\LeaderChanged;
 use App\Events\MissionAccomplished;
 use App\Events\PlayerJoined;
 use App\Events\PlayerEliminated;
@@ -179,10 +180,38 @@ class GameController extends Controller
         return response()->json(['success' => true, 'message' => 'Agente eliminado.']);
     }
 
+    // ─── Jogador sai da sala voluntariamente (lobby) ─────────────────────────
+    public function leaveRoom(Request $request, string $pin)
+    {
+        $request->validate(['player_id' => 'required|integer']);
+
+        $room   = Room::where('pin', $pin)->where('status', 'waiting')->first();
+        $player = Player::find($request->player_id);
+
+        if (!$room || !$player || $player->room_id !== $room->id) {
+            return response()->json(['success' => false, 'message' => 'Sala ou jogador não encontrado.'], 404);
+        }
+
+        $wasLeader = $player->is_leader;
+        $player->delete();
+
+        // se era líder, passa a liderança para o próximo jogador ativo
+        if ($wasLeader) {
+            $next = $room->players()->first();
+            if ($next) {
+                $next->update(['is_leader' => true]);
+                broadcast(new LeaderChanged($pin, $next->id, $next->name));
+            }
+            // se não há mais ninguém, a sala permanece em "waiting" e será reaproveitada
+        }
+
+        return response()->json(['success' => true, 'message' => 'Agente retirado da operação.']);
+    }
+
     // ─── Estado atual da sala (para reconexão após F5) ───────────────────────
     public function roomState(Request $request, string $pin)
     {
-        $room = Room::where('pin', $pin)->firstOrFail();
+        $room    = Room::where('pin', $pin)->firstOrFail();
         $players = $room->players()->get(['id', 'name', 'is_leader', 'finished_at']);
 
         $yourStatus = ['is_eliminated' => false, 'is_winner' => false];
@@ -194,18 +223,27 @@ class GameController extends Controller
             }
         }
 
+        // puzzle e solution disponíveis apenas durante a partida
+        $isPlaying = $room->status === 'playing';
+
         return response()->json([
             'success' => true,
             'data'    => [
-                'room'        => ['pin' => $room->pin, 'status' => $room->status, 'players_count' => $players->count()],
+                'room'        => [
+                    'pin'           => $room->pin,
+                    'status'        => $room->status,
+                    'difficulty'    => $room->difficulty,
+                    'players_count' => $players->count(),
+                ],
                 'players'     => $players->map(fn($p) => [
-                    'id'           => $p->id,
-                    'name'         => $p->name,
-                    'is_leader'    => $p->is_leader,
+                    'id'            => $p->id,
+                    'name'          => $p->name,
+                    'is_leader'     => $p->is_leader,
                     'is_eliminated' => $p->finished_at && $p->id !== $room->winner_id,
                 ]),
                 'your_status' => $yourStatus,
-                'puzzle'      => $room->status === 'playing' ? $room->puzzle : null,
+                'puzzle'      => $isPlaying ? $room->puzzle   : null,
+                'solution'    => $isPlaying ? $room->solution : null,
             ],
         ]);
     }

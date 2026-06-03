@@ -1,5 +1,13 @@
 import { Difficulty } from './room.model';
 
+export interface GamePlayer {
+  id: number;
+  name: string;
+  is_leader: boolean;
+  is_eliminated: boolean;
+  is_winner: boolean;
+}
+
 export interface CellPosition {
   r: number;
   c: number;

@@ -20,6 +20,7 @@ export interface RoomStateResponse {
   players: Array<{ id: number; name: string; is_leader: boolean; is_eliminated: boolean }>;
   your_status: { is_eliminated: boolean; is_winner: boolean };
   puzzle: number[][] | null;
+  solution: number[][] | null;
 }
 
 export interface DonationResponse {

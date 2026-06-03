@@ -196,6 +196,20 @@ export class LobbyComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Sair da sala (botão abandonar) ──────────────────────────────────────
+  leaveRoom(): void {
+    const s = this.gs.state();
+    if (s.playerId && this.roomPin()) {
+      this.ws.leaveRoom(this.roomPin());
+      this.api.leaveRoom(this.roomPin(), s.playerId).subscribe();
+    }
+    this.ws.disconnect();
+    this.players.set([]);
+    this.roomPin.set('');
+    this.isLeader.set(false);
+    this.mode.set('select');
+  }
+
   get inviteLink(): string {
     return this.roomPin() ? `${window.location.origin}/lobby?pin=${this.roomPin()}` : '';
   }
