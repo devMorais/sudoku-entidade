@@ -23,19 +23,24 @@ export class BoardComponent implements OnInit, OnDestroy {
   private api    = inject(GameApiService);
   private router = inject(Router);
 
-  readonly state   = this.gs.state;
-  readonly rows    = [0,1,2,3,4,5,6,7,8];
+  readonly state    = this.gs.state;
+  readonly wrongCell = this.gs.wrongCell;
+  readonly rows     = [0,1,2,3,4,5,6,7,8];
   readonly emptySet = new Set<number>();
 
   shakingCell = signal<CellPosition | null>(null);
-  private sub?: Subscription;
+  private subs: Subscription[] = [];
 
   ngOnInit(): void {
-    this.sub = this.ws.events$.subscribe(evt => this.handleWs(evt.type, evt.payload));
+    this.subs.push(
+      this.ws.events$.subscribe(evt => this.handleWs(evt.type, evt.payload)),
+      this.gs.eliminated$.subscribe(() => this.onEliminated()),
+      this.gs.timeout$.subscribe(() => this.onTimeout()),
+    );
   }
 
   ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+    this.subs.forEach(s => s.unsubscribe());
     this.audio.suspend();
   }
 
@@ -72,6 +77,19 @@ export class BoardComponent implements OnInit, OnDestroy {
     return sk !== null && sk.r === r && sk.c === c;
   }
 
+  // valor da célula: usa o board normal, mas mostra número errado temporariamente
+  getCellValue(r: number, c: number): number {
+    const w = this.wrongCell();
+    if (w && w.r === r && w.c === c) return w.value;
+    return this.state().board[r]?.[c] ?? 0;
+  }
+
+  // célula com número errado temporário
+  isWrongEntry(r: number, c: number): boolean {
+    const w = this.wrongCell();
+    return w !== null && w.r === r && w.c === c;
+  }
+
   onCellClick(r: number, c: number): void {
     if (this.state().gameOver) return;
     this.gs.selectCell({ r, c });
@@ -84,7 +102,6 @@ export class BoardComponent implements OnInit, OnDestroy {
     const key = e.key;
     const code = e.code;
 
-    // números 1-9 (teclado principal e numérico)
     const isMainNum   = /^[1-9]$/.test(key);
     const isNumpadNum = code.startsWith('Numpad') && /^[1-9]$/.test(code.replace('Numpad', ''));
     if (isMainNum || isNumpadNum) {
@@ -93,12 +110,10 @@ export class BoardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // apagar
     if (['Backspace', 'Delete', '0'].includes(key) || code === 'Numpad0') {
       this.gs.eraseCell(); return;
     }
 
-    // navegar
     const { r, c } = this.state().sel;
     if (r < 0) return;
     const moves: Record<string, CellPosition> = {
@@ -114,11 +129,14 @@ export class BoardComponent implements OnInit, OnDestroy {
     const result = this.gs.inputValue(n);
     const { r, c } = this.state().sel;
     switch (result) {
-      case 'correct': this.audio.play('type'); break;
+      case 'correct':    this.audio.play('type'); break;
       case 'wrong':
         this.audio.play('error');
         this.triggerShake(r, c);
-        if (this.state().errors >= this.state().maxErr) this.handleEliminated();
+        break;
+      case 'eliminated' as any:
+        this.audio.play('error');
+        this.triggerShake(r, c);
         break;
       case 'win':
         this.audio.play('win');
@@ -141,13 +159,22 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/cinematic'], { state: { outcome: 'win', errors: s.errors, hints: 3 - s.hints } });
   }
 
-  private handleEliminated(): void {
-    this.gs.markGameOver();
+  private onEliminated(): void {
     const s = this.state();
     if (s.multiplayer && s.playerId) {
       this.api.eliminatePlayer(s.roomPin, s.playerId, s.errors, 3 - s.hints).subscribe();
     }
     this.gs.setSpectator();
+    this.router.navigate(['/cinematic'], { state: { outcome: 'lose', errors: s.errors, hints: 3 - s.hints } });
+  }
+
+  private onTimeout(): void {
+    const s = this.state();
+    if (s.multiplayer && s.playerId) {
+      this.api.eliminatePlayer(s.roomPin, s.playerId, s.errors, 3 - s.hints).subscribe();
+    }
+    this.gs.setSpectator();
+    this.router.navigate(['/cinematic'], { state: { outcome: 'lose', reason: 'timeout', errors: s.errors, hints: 3 - s.hints } });
   }
 
   private handleWs(type: string, payload: unknown): void {

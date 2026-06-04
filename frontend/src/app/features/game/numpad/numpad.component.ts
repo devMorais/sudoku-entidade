@@ -40,7 +40,12 @@ export class NumpadComponent {
     const result = this.gs.inputValue(n);
     if (result === 'correct' || result === 'note') this.audio.play('type');
     if (result === 'wrong') this.audio.play('error');
-    if (result === 'win') { this.audio.play('win'); this.router.navigate(['/cinematic'], { state: { outcome: 'win' } }); }
+    if ((result as any) === 'eliminated') this.audio.play('error');
+    if (result === 'win') {
+      this.audio.play('win');
+      const s = this.gs.state();
+      this.router.navigate(['/cinematic'], { state: { outcome: 'win', errors: s.errors, hints: 3 - s.hints } });
+    }
   }
 
   erase(): void {
@@ -53,6 +58,7 @@ export class NumpadComponent {
 
   exitGame(): void {
     this.gs.stopTimer();
+    this.gs.clearSession();
     this.router.navigate(['/lobby']);
   }
 }

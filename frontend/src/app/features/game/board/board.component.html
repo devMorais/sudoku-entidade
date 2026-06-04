@@ -2,13 +2,14 @@
   @for (r of rows; track r) {
     @for (c of rows; track c) {
       <app-cell
-        [value]="state().board[r]?.[c] ?? 0"
+        [value]="getCellValue(r, c)"
         [given]="state().given[r]?.[c] ?? false"
         [notes]="state().notes[r]?.[c] ?? emptySet"
         [selected]="isSelected(r, c)"
         [hlLine]="isHlLine(r, c)"
         [hlBlock]="isHlBlock(r, c)"
         [hlSame]="isHlSame(r, c)"
+        [hasError]="isWrongEntry(r, c)"
         [shaking]="isShaking(r, c)"
         [class.border-right]="c === 2 || c === 5"
         [class.border-bottom]="r === 2 || r === 5"

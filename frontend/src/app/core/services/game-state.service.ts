@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { Subject } from 'rxjs';
 import { GameState, INITIAL_GAME_STATE, DIFFICULTY_CONFIG, CellPosition } from '../models/game-state.model';
 import { Difficulty } from '../models/room.model';
 import { SudokuService } from './sudoku.service';
@@ -9,6 +10,14 @@ const SESSION_KEY = 'sudoku_session';
 export class GameStateService {
 
   private readonly _state = signal<GameState>({ ...INITIAL_GAME_STATE });
+
+  // emite quando o tempo acaba ou o jogador é eliminado (para navegação)
+  readonly eliminated$ = new Subject<void>();
+  readonly timeout$    = new Subject<void>();
+
+  // célula com número errado para exibição temporária (420ms)
+  private readonly _wrongCell = signal<{ r: number; c: number; value: number } | null>(null);
+  readonly wrongCell = this._wrongCell.asReadonly();
 
   // leituras reativas do estado
   readonly state = this._state.asReadonly();
@@ -111,7 +120,7 @@ export class GameStateService {
       return 'note';
     }
 
-    // modo normal
+    // modo normal — número correto
     if (n === s.sol[r][c]) {
       const board = s.board.map(row => [...row]);
       board[r][c] = n;
@@ -121,8 +130,17 @@ export class GameStateService {
       if (filled === s.total) return 'win';
       return 'correct';
     } else {
+      // número errado: mostra brevemente na célula e conta erro
       const errors = s.errors + 1;
+      this._wrongCell.set({ r, c, value: n });
       this._state.update(st => ({ ...st, errors }));
+      setTimeout(() => this._wrongCell.set(null), 420);
+
+      if (errors >= s.maxErr) {
+        this.markGameOver();
+        this.eliminated$.next();
+        return 'eliminated' as any;
+      }
       return 'wrong';
     }
   }
@@ -217,7 +235,13 @@ export class GameStateService {
       const elapsed = Math.floor((Date.now() - this._state().startTime) / 1000);
       const timeLeft = Math.max(0, this._state().maxTime - elapsed);
       this._state.update(s => ({ ...s, timeLeft }));
-      if (timeLeft === 0) this.stopTimer();
+      if (timeLeft === 0) {
+      this.stopTimer();
+      if (!this._state().gameOver) {
+        this.markGameOver();
+        this.timeout$.next();
+      }
+    }
     }, 500);
   }
 
