@@ -1,0 +1,82 @@
+<div class="spectate-screen">
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <header class="spec-header">
+    <div class="spec-tag">// MODO ESPECTADOR — PROTOCOLO ATIVO</div>
+    <button class="btn-back" (click)="back()">← ABANDONAR</button>
+  </header>
+
+  <div class="spec-layout">
+
+    <!-- Lista de jogadores -->
+    <aside class="players-panel">
+      <div class="panel-title">AGENTES EM CAMPO</div>
+
+      @for (p of players(); track p.id) {
+        <button
+          class="player-card"
+          [class.active]="watchId() === p.id"
+          [class.eliminated]="p.isEliminated"
+          [class.winner]="p.isWinner"
+          (click)="selectPlayer(p.id)"
+          [disabled]="p.isEliminated && !p.isWinner"
+        >
+          <div class="pc-top">
+            <span class="pc-name">{{ p.name }}</span>
+            @if (p.isWinner) { <span class="pc-badge win">◈ VENCEDOR</span> }
+            @else if (p.isEliminated) { <span class="pc-badge out">✕ ELIMINADO</span> }
+            @else { <span class="pc-badge live">● AO VIVO</span> }
+          </div>
+          <div class="pc-stats">
+            <span>{{ p.errors }}/{{ watched()?.total !== undefined ? 5 : '?' }} erros</span>
+            <span class="pc-prog">{{ p.total > 0 ? (p.filled / p.total * 100 | number:'1.0-0') : 0 }}%</span>
+          </div>
+          <div class="pc-bar">
+            <div class="pc-fill" [style.width.%]="p.total > 0 ? (p.filled / p.total * 100) : 0"></div>
+          </div>
+        </button>
+      }
+
+      @if (players().length === 0) {
+        <div class="no-players">Carregando agentes...</div>
+      }
+    </aside>
+
+    <!-- Tabuleiro do jogador assistido -->
+    <main class="board-area">
+      @if (watched()) {
+        <div class="watch-label">
+          <span class="watch-name">{{ watched()!.name }}</span>
+          <span class="watch-progress">{{ progress() }}% concluído · {{ watched()!.errors }} erros</span>
+        </div>
+
+        <div class="spec-board">
+          @for (r of rows; track r) {
+            @for (c of rows; track c) {
+              <div
+                class="spec-cell"
+                [class.given]="isGiven(r, c)"
+                [class.filled]="!isGiven(r, c) && cellValue(r, c) !== 0"
+                [class.border-right]="c === 2 || c === 5"
+                [class.border-bottom]="r === 2 || r === 5"
+              >
+                @if (cellValue(r, c) !== 0) {
+                  {{ cellValue(r, c) }}
+                }
+              </div>
+            }
+          }
+        </div>
+
+        @if (watched()!.isWinner) {
+          <div class="result-banner win">◈ MISSÃO CUMPRIDA</div>
+        } @else if (watched()!.isEliminated) {
+          <div class="result-banner out">✕ AGENTE ELIMINADO</div>
+        }
+      } @else {
+        <div class="no-watch">Selecione um agente para assistir</div>
+      }
+    </main>
+
+  </div>
+</div>

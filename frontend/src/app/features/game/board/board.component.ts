@@ -126,10 +126,17 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   private doInput(n: number): void {
-    const result = this.gs.inputValue(n);
     const { r, c } = this.state().sel;
+    const result = this.gs.inputValue(n);
     switch (result) {
-      case 'correct':    this.audio.play('type'); break;
+      case 'correct': {
+        this.audio.play('type');
+        const s = this.state();
+        if (s.multiplayer && s.playerId) {
+          this.api.reportMove(s.roomPin, s.playerId, r, c, n, s.errors, s.filled).subscribe();
+        }
+        break;
+      }
       case 'wrong':
         this.audio.play('error');
         this.triggerShake(r, c);
@@ -163,18 +170,24 @@ export class BoardComponent implements OnInit, OnDestroy {
     const s = this.state();
     if (s.multiplayer && s.playerId) {
       this.api.eliminatePlayer(s.roomPin, s.playerId, s.errors, 3 - s.hints).subscribe();
+      this.gs.setSpectator();
+      this.router.navigate(['/spectate']);
+    } else {
+      this.gs.setSpectator();
+      this.router.navigate(['/cinematic'], { state: { outcome: 'lose', errors: s.errors, hints: 3 - s.hints } });
     }
-    this.gs.setSpectator();
-    this.router.navigate(['/cinematic'], { state: { outcome: 'lose', errors: s.errors, hints: 3 - s.hints } });
   }
 
   private onTimeout(): void {
     const s = this.state();
     if (s.multiplayer && s.playerId) {
       this.api.eliminatePlayer(s.roomPin, s.playerId, s.errors, 3 - s.hints).subscribe();
+      this.gs.setSpectator();
+      this.router.navigate(['/spectate']);
+    } else {
+      this.gs.setSpectator();
+      this.router.navigate(['/cinematic'], { state: { outcome: 'lose', reason: 'timeout', errors: s.errors, hints: 3 - s.hints } });
     }
-    this.gs.setSpectator();
-    this.router.navigate(['/cinematic'], { state: { outcome: 'lose', reason: 'timeout', errors: s.errors, hints: 3 - s.hints } });
   }
 
   private handleWs(type: string, payload: unknown): void {

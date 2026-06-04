@@ -9,6 +9,7 @@ use App\Events\LeaderChanged;
 use App\Events\MissionAccomplished;
 use App\Events\PlayerJoined;
 use App\Events\PlayerEliminated;
+use App\Events\PlayerMoved;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -208,11 +209,52 @@ class GameController extends Controller
         return response()->json(['success' => true, 'message' => 'Agente retirado da operação.']);
     }
 
+    // ─── Jogador reporta movimento correto (para espectadores) ──────────────
+    public function reportMove(Request $request, string $pin)
+    {
+        $request->validate([
+            'player_id' => 'required|integer',
+            'r'         => 'required|integer|between:0,8',
+            'c'         => 'required|integer|between:0,8',
+            'value'     => 'required|integer|between:1,9',
+            'errors'    => 'required|integer',
+            'filled'    => 'required|integer',
+        ]);
+
+        $room   = Room::where('pin', $pin)->where('status', 'playing')->first();
+        $player = Player::find($request->player_id);
+
+        if (!$room || !$player || $player->room_id !== $room->id) {
+            return response()->json(['success' => false], 404);
+        }
+
+        // inicializa board_state a partir do puzzle original na primeira jogada
+        $board = $player->board_state ?? $room->puzzle;
+        $board[$request->r][$request->c] = $request->value;
+        $player->update([
+            'board_state'  => $board,
+            'errors_count' => $request->errors,
+            'filled_count' => $request->filled,
+        ]);
+
+        broadcast(new PlayerMoved(
+            $pin,
+            $player->id,
+            $request->r,
+            $request->c,
+            $request->value,
+            $request->errors,
+            $request->filled,
+        ));
+
+        return response()->json(['success' => true]);
+    }
+
     // ─── Estado atual da sala (para reconexão após F5) ───────────────────────
     public function roomState(Request $request, string $pin)
     {
         $room    = Room::where('pin', $pin)->firstOrFail();
-        $players = $room->players()->get(['id', 'name', 'is_leader', 'finished_at']);
+        $players = $room->players()->get(['id', 'name', 'is_leader', 'finished_at', 'board_state', 'errors_count', 'filled_count']);
 
         $yourStatus = ['is_eliminated' => false, 'is_winner' => false];
         if ($request->player_id) {
@@ -239,7 +281,10 @@ class GameController extends Controller
                     'id'            => $p->id,
                     'name'          => $p->name,
                     'is_leader'     => $p->is_leader,
-                    'is_eliminated' => $p->finished_at && $p->id !== $room->winner_id,
+                    'is_eliminated' => (bool) ($p->finished_at && $p->id !== $room->winner_id),
+                    'errors_count'  => $p->errors_count ?? 0,
+                    'filled_count'  => $p->filled_count ?? 0,
+                    'board_state'   => $isPlaying ? $p->board_state : null,
                 ]),
                 'your_status' => $yourStatus,
                 'puzzle'      => $isPlaying ? $room->puzzle   : null,

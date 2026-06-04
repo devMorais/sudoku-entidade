@@ -64,6 +64,10 @@ export class GameApiService {
     return this.http.post<ApiResponse<null>>(`${this.base}/rooms/${pin}/leave`, { player_id: playerId });
   }
 
+  reportMove(pin: string, playerId: number, r: number, c: number, value: number, errors: number, filled: number): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(`${this.base}/rooms/${pin}/move`, { player_id: playerId, r, c, value, errors, filled });
+  }
+
   createDonation(amount: number, donorName: string, donorEmail: string): Observable<ApiResponse<DonationResponse>> {
     return this.http.post<ApiResponse<DonationResponse>>(`${this.base}/donations`, {
       amount,

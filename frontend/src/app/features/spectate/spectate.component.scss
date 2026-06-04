@@ -1,0 +1,221 @@
+.spectate-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding: 1rem 1.5rem 2rem;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.scanlines {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px);
+}
+* { position: relative; z-index: 1; }
+
+.spec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spec-tag {
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+.btn-back {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  padding: 0.3rem 0.65rem;
+  &:hover { border-color: var(--accent); color: var(--accent); }
+}
+
+.spec-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1.5rem;
+  flex: 1;
+  align-items: start;
+}
+
+// ── Painel lateral ─────────────────────────────────────────────
+.players-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.panel-title {
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.player-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0.75rem;
+  text-align: left;
+  transition: all 0.2s;
+  width: 100%;
+
+  &:hover:not(:disabled) { border-color: rgba(0,255,136,0.3); }
+  &.active { border-color: var(--accent); background: rgba(0,255,136,0.06); }
+  &.eliminated { opacity: 0.45; cursor: default; }
+  &.winner { border-color: var(--accent); }
+}
+
+.pc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.pc-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: 0.05em;
+}
+
+.pc-badge {
+  font-size: 0.48rem;
+  letter-spacing: 0.1em;
+  border-radius: 20px;
+  padding: 0.15rem 0.4rem;
+
+  &.live { color: var(--accent); background: rgba(0,255,136,0.1); animation: blink 1.5s infinite; }
+  &.out  { color: #ff4444; background: rgba(255,68,68,0.1); }
+  &.win  { color: var(--accent); background: rgba(0,255,136,0.15); }
+}
+
+.pc-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.pc-prog { color: var(--fg); }
+
+.pc-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pc-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+  box-shadow: 0 0 6px rgba(0,255,136,0.4);
+}
+
+.no-players {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 1rem;
+}
+
+// ── Board area ──────────────────────────────────────────────────
+.board-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.watch-label {
+  text-align: center;
+}
+
+.watch-name {
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  display: block;
+}
+
+.watch-progress {
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+.spec-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 2px;
+  background: var(--border);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.spec-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  font-size: clamp(0.8rem, 2vw, 1.2rem);
+  font-weight: 700;
+  color: var(--muted);
+  border-radius: 2px;
+  transition: background 0.2s;
+
+  &.given { color: var(--fg); }
+  &.filled {
+    color: var(--accent);
+    background: rgba(0,255,136,0.05);
+    animation: pop 0.3s ease;
+  }
+  &.border-right { border-right: 2px solid rgba(255,255,255,0.2); }
+  &.border-bottom { border-bottom: 2px solid rgba(255,255,255,0.2); }
+}
+
+.result-banner {
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+
+  &.win { color: var(--accent); background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); }
+  &.out { color: #ff4444; background: rgba(255,68,68,0.08); border: 1px solid rgba(255,68,68,0.2); }
+}
+
+.no-watch {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 3rem;
+}
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes pop   { 0% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+@media (max-width: 600px) {
+  .spec-layout { grid-template-columns: 1fr; }
+  .players-panel { flex-direction: row; flex-wrap: wrap; }
+  .player-card { flex: 1; min-width: 140px; }
+}

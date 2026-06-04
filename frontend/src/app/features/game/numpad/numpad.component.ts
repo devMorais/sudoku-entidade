@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { GameStateService } from '../../../core/services/game-state.service';
+import { GameApiService } from '../../../core/services/game-api.service';
 import { AudioService } from '../../../core/services/audio.service';
 import { Router } from '@angular/router';
 
@@ -30,6 +31,7 @@ import { Router } from '@angular/router';
 })
 export class NumpadComponent {
   gs    = inject(GameStateService);
+  api   = inject(GameApiService);
   audio = inject(AudioService);
   private router = inject(Router);
 
@@ -37,8 +39,16 @@ export class NumpadComponent {
 
   input(n: number): void {
     if (this.gs.state().gameOver) return;
+    const { r, c } = this.gs.state().sel;
     const result = this.gs.inputValue(n);
-    if (result === 'correct' || result === 'note') this.audio.play('type');
+    if (result === 'note') this.audio.play('type');
+    if (result === 'correct') {
+      this.audio.play('type');
+      const s = this.gs.state();
+      if (s.multiplayer && s.playerId) {
+        this.api.reportMove(s.roomPin, s.playerId, r, c, n, s.errors, s.filled).subscribe();
+      }
+    }
     if (result === 'wrong') this.audio.play('error');
     if (result === 'eliminated') this.audio.play('error');
     if (result === 'win') {

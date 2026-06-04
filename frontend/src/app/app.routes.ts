@@ -20,6 +20,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/cinematic/cinematic.component').then(m => m.CinematicComponent),
   },
   {
+    path: 'spectate',
+    loadComponent: () => import('./features/spectate/spectate.component').then(m => m.SpectateComponent),
+  },
+  {
     path: 'donation',
     loadComponent: () => import('./features/donation/donation.component').then(m => m.DonationComponent),
   },

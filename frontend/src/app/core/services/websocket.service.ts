@@ -17,6 +17,7 @@ export interface GameStartedPayload   { pin: string; puzzle: number[][]; solutio
 export interface PlayerEliminatedPayload { pin: string; playerId: number }
 export interface MissionAccomplishedPayload { pin: string; winnerName: string; winnerId: number }
 export interface LeaderChangedPayload { pin: string; newLeaderId: number; newLeaderName: string }
+export interface PlayerMovedPayload   { pin: string; playerId: number; r: number; c: number; value: number; errors: number; filled: number }
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService implements OnDestroy {
@@ -67,7 +68,9 @@ export class WebSocketService implements OnDestroy {
       .listen('.MissionAccomplished', (p: MissionAccomplishedPayload) =>
         this.events$.next({ type: 'MissionAccomplished', payload: p }))
       .listen('.LeaderChanged', (p: LeaderChangedPayload) =>
-        this.events$.next({ type: 'LeaderChanged', payload: p }));
+        this.events$.next({ type: 'LeaderChanged', payload: p }))
+      .listen('.PlayerMoved', (p: PlayerMovedPayload) =>
+        this.events$.next({ type: 'PlayerMoved', payload: p }));
   }
 
   leaveRoom(pin: string): void {
