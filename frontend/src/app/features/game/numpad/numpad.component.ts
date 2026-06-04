@@ -40,7 +40,7 @@ export class NumpadComponent {
     const result = this.gs.inputValue(n);
     if (result === 'correct' || result === 'note') this.audio.play('type');
     if (result === 'wrong') this.audio.play('error');
-    if ((result as any) === 'eliminated') this.audio.play('error');
+    if (result === 'eliminated') this.audio.play('error');
     if (result === 'win') {
       this.audio.play('win');
       const s = this.gs.state();

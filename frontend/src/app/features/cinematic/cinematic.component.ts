@@ -74,8 +74,10 @@ export class CinematicComponent implements OnInit {
     const s = (t % 60).toString().padStart(2, '0');
     this.formattedTime = `${m}:${s}`;
 
-    const lines = this.outcome() === 'win' ? this.winLines : this.loseLines;
+    // copia o array para não mutar o original entre partidas
+    const lines = [...(this.outcome() === 'win' ? this.winLines : this.loseLines)];
     if (this.winnerName) lines.push(`> VENCEDOR: ${this.winnerName.toUpperCase()}`);
+    if (nav?.reason === 'timeout') lines.push('> TEMPO ESGOTADO');
 
     this.animateLines(lines);
   }
@@ -93,6 +95,8 @@ export class CinematicComponent implements OnInit {
   }
 
   restart(): void {
+    // reseta o estado do jogo antes de voltar ao lobby
+    this.gs.clearSession();
     this.router.navigate(['/lobby']);
   }
 }

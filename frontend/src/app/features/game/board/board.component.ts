@@ -134,7 +134,7 @@ export class BoardComponent implements OnInit, OnDestroy {
         this.audio.play('error');
         this.triggerShake(r, c);
         break;
-      case 'eliminated' as any:
+      case 'eliminated':
         this.audio.play('error');
         this.triggerShake(r, c);
         break;

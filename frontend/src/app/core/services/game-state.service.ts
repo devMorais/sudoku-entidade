@@ -106,8 +106,8 @@ export class GameStateService {
     this._state.update(s => ({ ...s, notesMode: !s.notesMode }));
   }
 
-  // insere ou apaga valor na célula selecionada; retorna 'correct' | 'wrong' | 'note' | 'noop'
-  inputValue(n: number): 'correct' | 'wrong' | 'note' | 'noop' | 'win' {
+  // insere ou apaga valor na célula selecionada
+  inputValue(n: number): 'correct' | 'wrong' | 'note' | 'noop' | 'win' | 'eliminated' {
     const s = this._state();
     const { r, c } = s.sel;
     if (s.gameOver || r < 0 || this.isGiven(r, c)) return 'noop';
@@ -139,7 +139,7 @@ export class GameStateService {
       if (errors >= s.maxErr) {
         this.markGameOver();
         this.eliminated$.next();
-        return 'eliminated' as any;
+        return 'eliminated';
       }
       return 'wrong';
     }

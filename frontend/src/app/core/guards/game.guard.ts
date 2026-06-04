@@ -12,8 +12,8 @@ export const gameGuard: CanActivateFn = () => {
   const ws     = inject(WebSocketService);
   const router = inject(Router);
 
-  // jogo já carregado em memória → acesso direto
-  if (gs.state().sol.length > 0) return true;
+  // jogo carregado e ativo em memória → acesso direto
+  if (gs.state().sol.length > 0 && !gs.state().gameOver) return true;
 
   // tenta recuperar sessão multiplayer salva (após F5)
   const session = gs.loadSavedSession();
